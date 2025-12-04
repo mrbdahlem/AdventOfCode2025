@@ -8,10 +8,12 @@ public class Aoc {
         File inputFile = new File("dayX.txt");
         Scanner scan = new Scanner(inputFile);
        
+        // Load the entire data as one token
+        scan.useDelimiter("\\A");
 
         scan.close();
 
-        // Check for invalid ids
+        // Solve the two parts of the puzzle
         long start = System.nanoTime();
         partOne();
         long first = System.nanoTime();
