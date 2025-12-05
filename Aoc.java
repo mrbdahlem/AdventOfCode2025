@@ -5,11 +5,12 @@ import java.util.Scanner;
 public class Aoc {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data
-        File inputFile = new File("dayX.txt");
+        File inputFile = new File("sampleX.txt");
         Scanner scan = new Scanner(inputFile);
        
         // Load the entire data as one token
         scan.useDelimiter("\\A");
+        String data = scan.next();
 
         scan.close();
 
