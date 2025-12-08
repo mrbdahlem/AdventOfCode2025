@@ -26,10 +26,9 @@ public class Aoc6 {
         System.out.println("Part 2 duration: " + (sec - first) / 1000 / 1000 + "ms");
     }
 
-    /*
- * @param ops 
- * @param grid *
-     * 
+    /**
+     * Solve each math problem and sum the results  
+     * @param lines puzzle input broken into horizontal lines
      */
     public static void partOne(String[] lines) {
         long[][] grid = new long[lines.length - 1][];
@@ -81,8 +80,9 @@ public class Aoc6 {
     }
 
     /**
-     * @param lines 
-     * 
+     * Solve each math problem (the cephalopod way with numbers written vertically)
+     * then sum the results
+     * @param lines puzzle input broken into horizontal lines
      */
     public static void partTwo(String[] lines) {
         long total = 0;
