@@ -1,3 +1,3 @@
 Here're my fancy solutions to [Advent of Code 2025](https://adventofcode.com/2025)
 
-![](https://img.shields.io/badge/days%20completed-0-red) ![](https://img.shields.io/badge/stars%20⭐-0-yellow)
+![](https://img.shields.io/badge/days%20completed-7-red) ![](https://img.shields.io/badge/stars%20⭐-14-yellow)
