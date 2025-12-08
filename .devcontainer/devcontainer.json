@@ -1,0 +1,15 @@
+{
+  "name": "Java 21 - Maven",
+  "image": "mcr.microsoft.com/devcontainers/java:1-21-bullseye",
+  "forwardPorts": [],
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-maven",
+        "vscjava.vscode-java-debug"
+      ]
+    }
+  }
+}
