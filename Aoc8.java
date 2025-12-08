@@ -39,7 +39,7 @@ public class Aoc8 {
         long start = System.nanoTime();
         partOne(points, pairs);
         long first = System.nanoTime();
-        partTwo();
+        partTwo(points);
         long sec = System.nanoTime();
 
         System.out.println("Part 1 duration: " + (first - start) / 1000 / 1000 + "ms");
@@ -72,6 +72,7 @@ public class Aoc8 {
         connectedPairs.sort((a, b) -> Double.compare(a.distance(), b.distance()));
 
         // Connect the closest pairs of points into circuits
+
         for (int i = 0; i < pairs; i++) {
             Pair pair = connectedPairs.get(i);
             Circuit c1 = null;
@@ -115,10 +116,66 @@ public class Aoc8 {
     }
 
     /**
+     * @param points 
      * 
      */
-    public static void partTwo() {
-        long total = 0;
+    public static void partTwo(Point3D[] points) {
+        // Initialize each point as its own circuit
+        List<Circuit> circuits = new ArrayList<>();
+        for (Point3D p : points) {
+            Circuit c = new Circuit();
+            c.add(p);
+            circuits.add(c);
+        }
+
+        // Create all possible pairs of points
+        List<Pair> connectedPairs = new ArrayList<>();
+        for (int j = 0; j < points.length; j++) {
+            Point3D p1 = points[j];
+            for (int k = j + 1; k < points.length; k++) {
+                connectedPairs.add(new Pair(p1, points[k]));
+            }
+        }
+
+        // Sort pairs by distance smallest to largest
+        connectedPairs.sort((a, b) -> Double.compare(a.distance(), b.distance()));
+
+        // Connect the closest pairs of points into circuits
+
+        int i = 0;
+        Pair pair = null;
+        while(circuits.size() > 1) {
+            pair = connectedPairs.get(i);
+            Circuit c1 = null;
+            Circuit c2 = null;
+
+            for (Circuit c : circuits) {
+                if (c.contains(pair.p1())) {
+                    c1 = c;
+                }
+                if (c.contains(pair.p2())) {
+                    c2 = c;
+                }
+            }
+
+            // Merge the two circuits if they are not the same circuit
+            if (c1 != c2) {
+                Circuit merged = c1.merge(c2);
+                circuits.remove(c1);
+                circuits.remove(c2);
+                circuits.add(merged);
+            }
+            i++;
+        }
+        
+        if (pair == null) {
+            throw new IllegalStateException("No pairs were connected");
+        }
+        
+        System.out.println("Number of circuits: " + circuits.size());
+
+        // Calculate the distance from the wall to the last pair
+        long total = pair.p1().x() * pair.p2().x();
 
         System.out.println("Part 2: {" + total + "}");
     }
@@ -157,9 +214,9 @@ record Point3D(int x, int y, int z) {
     }
 
     public double distance(Point3D other) {
-        int dx = this.x - other.x;
-        int dy = this.y - other.y;
-        int dz = this.z - other.z;
+        long dx = this.x - other.x;
+        long dy = this.y - other.y;
+        long dz = this.z - other.z;
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 }
