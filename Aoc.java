@@ -2,6 +2,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+/**
+ * Advent of Code 2025 - Day X
+ * @author Brian Dahlem
+ * 
+ * Brief description of the puzzle.
+ */
 public class Aoc {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data
