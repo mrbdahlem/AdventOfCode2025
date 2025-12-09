@@ -36,21 +36,12 @@ public class Aoc8 {
 
         // Solve the two parts of the puzzle
         long start = System.nanoTime();
-        PreppedData preppedData = prepare(data);
-
-        // The circuits of connected points
-        List<Circuit> circuits = preppedData.circuits();
-
-        // A priority queue of connected pairs of points, sorted by distance
-        Queue<Pair> connectedPairs = preppedData.connectedPairs();
-
-        // A map of points to the circuits they belong to
-        Map<Point3D, Circuit> circuitMap = preppedData.circuitMap();
+        CircuitConnectionInfo circuitConnections = prepare(data);
 
         long prepped = System.nanoTime();
-        partOne(numPairs, connectedPairs, circuitMap, circuits);
+        partOne(numPairs, circuitConnections);
         long first = System.nanoTime();
-        partTwo(connectedPairs, circuitMap, circuits);
+        partTwo(circuitConnections);
         long sec = System.nanoTime();
 
         System.out.println("Preparation duration: " + (prepped - start) / 1000 / 1000 + "ms");
@@ -62,7 +53,7 @@ public class Aoc8 {
      * Parse the input data into useful structures
      * @param data raw input data 
      */
-    public static PreppedData prepare(String data) {
+    public static CircuitConnectionInfo prepare(String data) {
         // Parse the points from the input data
         String[] lines = data.split("\\R");
         Point3D[] points = new Point3D[lines.length];
@@ -89,7 +80,7 @@ public class Aoc8 {
             circuitMap.put(p, c);
         }
 
-        return new PreppedData(connectedPairs, circuitMap, circuits);
+        return new CircuitConnectionInfo(connectedPairs, circuitMap, circuits);
     }
 
     /**
@@ -99,15 +90,16 @@ public class Aoc8 {
      * @param circuitMap map of points to the circuits they belong to
      * @param connectedPairs priority queue of connected pairs of points sorted by distance
      */
-    public static void partOne(int numPairs, Queue<Pair> connectedPairs, Map<Point3D,Circuit> circuitMap, List<Circuit> circuits) {
+    public static void partOne(int numPairs, CircuitConnectionInfo circuitConnections) {
         // Connect the closest pairs of points into circuits
         for (int i = 0; i < numPairs; i++) {
-            connectNextPair(connectedPairs, circuitMap, circuits);
+            connectNextPair(circuitConnections);
         }
         
+        List<Circuit> circuits = circuitConnections.circuits();
+
         // Sort circuits by size largest to smallest
         circuits.sort((a, b) -> b.size() - a.size());
-
         // Calculate the product of the sizes of the three largest circuits
         long total = 1;
         for (int i = 0; i < 3; i++) {
@@ -124,11 +116,11 @@ public class Aoc8 {
      * @param circuitMap map of points to the circuits they belong to
      * @param connectedPairs priority queue of connected pairs of points sorted by distance
      */
-    public static void partTwo(Queue<Pair> connectedPairs, Map<Point3D,Circuit> circuitMap, List<Circuit> circuits) {
+    public static void partTwo(CircuitConnectionInfo circuitConnections) {
         // Connect the closest pairs of points into circuits
         Pair pair = null;
-        while(circuits.size() > 1) {
-            pair = connectNextPair(connectedPairs, circuitMap, circuits);
+        while(circuitConnections.circuits().size() > 1) {
+            pair = connectNextPair(circuitConnections);
         }
         
         // Calculate the distance from the wall to the last pair
@@ -137,7 +129,11 @@ public class Aoc8 {
         System.out.println("Part 2: {" + total + "}");
     }
 
-    private static Pair connectNextPair(Queue<Pair> connectedPairs, Map<Point3D,Circuit> circuitMap, List<Circuit> circuits) {
+    private static Pair connectNextPair(CircuitConnectionInfo circuitConnections) {
+        Queue<Pair> connectedPairs = circuitConnections.connectedPairs();
+        Map<Point3D, Circuit> circuitMap = circuitConnections.circuitMap();
+        List<Circuit> circuits = circuitConnections.circuits();
+
         Pair pair = connectedPairs.poll();
         Circuit c1 = circuitMap.get(pair.p1());
         Circuit c2 = circuitMap.get(pair.p2());
@@ -156,7 +152,7 @@ public class Aoc8 {
     /**
      * A record to hold prepped data structures
      */
-    record PreppedData(Queue<Pair> connectedPairs, Map<Point3D, Circuit> circuitMap, List<Circuit> circuits) {}
+    record CircuitConnectionInfo(Queue<Pair> connectedPairs, Map<Point3D, Circuit> circuitMap, List<Circuit> circuits) {}
 }
 
 /**
