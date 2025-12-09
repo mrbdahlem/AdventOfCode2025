@@ -1,3 +1,4 @@
+package day6;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -100,7 +101,7 @@ public class Aoc6 {
             }
 
             if (lines[lines.length - 1].charAt(i) != ' '){
-                System.out.println(" " + num);
+                // System.out.println(" " + num);
                 total += col;
                 op = lines[lines.length - 1].charAt(i);
                 col = Long.parseLong(num);
@@ -108,7 +109,7 @@ public class Aoc6 {
             }
             else {
                 if (num.isEmpty()){
-                    System.out.println("=" + col);
+                    // System.out.println("=" + col);
                     continue;
                 }
                 long val = Long.parseLong(num);
@@ -117,13 +118,13 @@ public class Aoc6 {
                 } else {
                     col += val;
                 }
-                System.out.println(op + num);
+                // System.out.println(op + num);
                 num = "";
             }
 
         }
 
-        System.out.println("=" + col);
+        // System.out.println("=" + col);
         total += col;
 
         System.out.println("Part 2: {" + total + "}");

@@ -1,3 +1,4 @@
+package day5;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -90,9 +91,9 @@ public class Aoc5 {
                 for (int j = mergedRanges.size() - 1; j > i; j--) {
                     Range other = mergedRanges.get(j);
                     if (current.overlaps(other)) {                    
-                        System.out.print("Merged " + other + " into " + current);
+                        // System.out.print("Merged " + other + " into " + current);
                         current = current.merge(other);
-                        System.out.println(" to form " + current);
+                        // System.out.println(" to form " + current);
                         mergedRanges.set(i, current);
                         mergedRanges.remove(j);
                         consolidated = true;

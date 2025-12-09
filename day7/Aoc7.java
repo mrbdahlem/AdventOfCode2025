@@ -1,3 +1,4 @@
+package day7;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
@@ -154,10 +155,10 @@ public class Aoc7 {
         memo.put(p, count);
         return count;
     }
-
-    /**
-     * A simple record to represent a point in the grid
-     */
-    private static record Point(int row, int col) {};
 }
+
+/**
+ * A simple record to represent a point in the grid
+ */
+record Point(int row, int col) {};
 

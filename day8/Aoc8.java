@@ -1,3 +1,4 @@
+package day8;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -150,106 +151,105 @@ public class Aoc8 {
         long total = pair.p1().x() * pair.p2().x();
 
         System.out.println("Part 2: {" + total + "}");
-    }
-
-    
-    /**
-     * A pair of 3D points and their squared distance
-     */
-    private static record Pair(Point3D p1, Point3D p2, long distance) implements Comparable<Pair> {
-        public Pair(Point3D p1, Point3D p2) {
-            this(p1, p2, p1.distanceSquared(p2));
-        }
-
-        /**
-         * Check if this pair is equal to another pair (regardless of order)
-         * @param o the other pair
-         * @return true if the pairs are equal, false otherwise
-         */
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Pair pair = (Pair) o;
-            return (p1.equals(pair.p1) && p2.equals(pair.p2)) ||
-                (p1.equals(pair.p2) && p2.equals(pair.p1));
-        }
-
-        /**
-         * Compare this pair to another pair based on their distance
-         * @param other the other pair
-         * @return negative if this pair is closer, positive if farther, zero if equal
-         */        @Override
-        public int compareTo(Pair other) {
-            return Long.compare(this.distance, other.distance);
-        }
-    }
-
-    /**
-     * A point in 3D space
-     */
-    private static record Point3D(int x, int y, int z) {
-        /**
-         * Create a Point3D from a comma-separated string
-         * @param s the string
-         * @return the Point3D
-         */
-        public static Point3D from (String s) {
-            String[] parts = s.split(",");
-            return new Point3D(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
-        }
-
-        /**
-         * Calculate the squared distance to another point
-         * @param other the other point
-         * @return the squared distance
-         */
-        public long distanceSquared(Point3D other) {
-            long dx = this.x - other.x;
-            long dy = this.y - other.y;
-            long dz = this.z - other.z;
-            return (dx * dx + dy * dy + dz * dz);
-        }
-    }
-
-    /**
-     * A circuit of connected points
-     */
-    private static class Circuit {
-        // The points in the circuit
-        private Set<Point3D> points = new LinkedHashSet<>();
-        
-        /**
-         * Add a point to the circuit
-         * @param p the point to add
-         */
-        public void add(Point3D p) {
-            points.add(p);
-        }
-
-        /**
-         * Get the size of the circuit
-         * @return the number of points in the circuit
-         */
-        public int size() {
-            return points.size();
-        }
-
-        /**
-         * Merge this circuit with another circuit
-         * @param other the other circuit
-         * @param circuitMap the map of points to circuits
-         * @return the merged circuit
-         */
-        public Circuit merge(Circuit other, Map<Point3D,Circuit> circuitMap) {
-            Circuit larger = this.size() >= other.size() ? this : other;
-            Circuit smaller = this.size() >= other.size() ? other : this;
-            
-            larger.points.addAll(smaller.points);
-            for (Point3D p : smaller.points) {
-                circuitMap.put(p, larger);
-            }
-            return larger;
-        }
     }   
 }
+
+/**
+ * A pair of 3D points and their squared distance
+ */
+record Pair(Point3D p1, Point3D p2, long distance) implements Comparable<Pair> {
+    public Pair(Point3D p1, Point3D p2) {
+        this(p1, p2, p1.distanceSquared(p2));
+    }
+
+    /**
+     * Check if this pair is equal to another pair (regardless of order)
+     * @param o the other pair
+     * @return true if the pairs are equal, false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pair pair = (Pair) o;
+        return (p1.equals(pair.p1) && p2.equals(pair.p2)) ||
+            (p1.equals(pair.p2) && p2.equals(pair.p1));
+    }
+
+    /**
+     * Compare this pair to another pair based on their distance
+     * @param other the other pair
+     * @return negative if this pair is closer, positive if farther, zero if equal
+     */        @Override
+    public int compareTo(Pair other) {
+        return Long.compare(this.distance, other.distance);
+    }
+}
+
+/**
+ * A point in 3D space
+ */
+record Point3D(int x, int y, int z) {
+    /**
+     * Create a Point3D from a comma-separated string
+     * @param s the string
+     * @return the Point3D
+     */
+    public static Point3D from (String s) {
+        String[] parts = s.split(",");
+        return new Point3D(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+    }
+
+    /**
+     * Calculate the squared distance to another point
+     * @param other the other point
+     * @return the squared distance
+     */
+    public long distanceSquared(Point3D other) {
+        long dx = this.x - other.x;
+        long dy = this.y - other.y;
+        long dz = this.z - other.z;
+        return (dx * dx + dy * dy + dz * dz);
+    }
+}
+
+/**
+ * A circuit of connected points
+ */
+class Circuit {
+    // The points in the circuit
+    private Set<Point3D> points = new LinkedHashSet<>();
+    
+    /**
+     * Add a point to the circuit
+     * @param p the point to add
+     */
+    public void add(Point3D p) {
+        points.add(p);
+    }
+
+    /**
+     * Get the size of the circuit
+     * @return the number of points in the circuit
+     */
+    public int size() {
+        return points.size();
+    }
+
+    /**
+     * Merge this circuit with another circuit
+     * @param other the other circuit
+     * @param circuitMap the map of points to circuits
+     * @return the merged circuit
+     */
+    public Circuit merge(Circuit other, Map<Point3D,Circuit> circuitMap) {
+        Circuit larger = this.size() >= other.size() ? this : other;
+        Circuit smaller = this.size() >= other.size() ? other : this;
+        
+        larger.points.addAll(smaller.points);
+        for (Point3D p : smaller.points) {
+            circuitMap.put(p, larger);
+        }
+        return larger;
+    }
+}   

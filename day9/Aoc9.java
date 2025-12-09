@@ -1,3 +1,4 @@
+package day9;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -47,7 +48,7 @@ public class Aoc9 {
      * Find the largest rectangle area defined by any two points
      * @param points array of points
      */
-    public static void partOne(Aoc9.Point[] points) {
+    public static void partOne(Point[] points) {
         long maxArea = 0;
 
         // Iterate over all pairs of points
@@ -73,7 +74,7 @@ public class Aoc9 {
      * Find the largest rectangle area defined by any two points that does not intersect any line segments
      * @param points the array of points
      */
-    public static void partTwo(Aoc9.Point[] points) {
+    public static void partTwo(Point[] points) {
         long maxArea = 0;
 
         // Iterate over all pairs of points
@@ -166,19 +167,20 @@ public class Aoc9 {
         }
     }
 
-    /**
-     * A point in 2D space
-     */
-    private static record Point(long x, long y) {
-        /**
-         * Create a Point from a string in the format "x,y"
-         * @param line the input string
-         * @return the created Point
-         */
-        public static Point from(String line) {
-            String[] parts = line.split(",");
-            return new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
-        }
-    }
 }
 
+
+/**
+ * A point in 2D space
+ */
+record Point(long x, long y) {
+    /**
+     * Create a Point from a string in the format "x,y"
+     * @param line the input string
+     * @return the created Point
+     */
+    public static Point from(String line) {
+        String[] parts = line.split(",");
+        return new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+    }
+}
