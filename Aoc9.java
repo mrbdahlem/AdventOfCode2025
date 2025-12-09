@@ -7,7 +7,7 @@ public class Aoc9 {
 
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data
-        File inputFile = new File("sample9.txt");
+        File inputFile = new File("day9.txt");
         Scanner scan = new Scanner(inputFile);
        
         // Load the entire data as one token
@@ -50,8 +50,8 @@ public class Aoc9 {
         long maxArea = 0;
 
         for (int i = 0; i < points.length - 1; i++) {
+            Point p1 = points[i];
             for (int j = i + 1; j < points.length; j++) {
-                Point p1 = points[i];
                 Point p2 = points[j];
 
                 long area = Math.abs((p1.x() - p2.x() + 1) * (p1.y() - p2.y() + 1));
@@ -68,15 +68,76 @@ public class Aoc9 {
      * 
      */
     public static void partTwo() {
-        long total = 0;
+        long maxArea = 0;
 
-        System.out.println("Part 2: {" + total + "}");
+        for (int i = 0; i < points.length - 1; i++) {
+            Point p1 = points[i];
+            for (int j = i + 1; j < points.length; j++) {
+                Point p2 = points[j];
+
+                long rectLeft = Math.min(p1.x(), p2.x());
+                long rectRight = Math.max(p1.x(), p2.x());
+                long rectTop = Math.min(p1.y(), p2.y());
+                long rectBottom = Math.max(p1.y(), p2.y()); 
+
+                long area = ((rectRight - rectLeft + 1) * (rectBottom - rectTop + 1));
+                if (area > maxArea) {
+                    for (int k = 0; k < points.length; k++) {
+                        if (k == i || k == j) {
+                            continue;
+                        }
+                        Point p3 = points[k];
+
+                        int l = (k + 1) % points.length;
+                        Point p4 = points[l];
+
+                        // check if the line between p3 and p4 intersects the rectangle formed by p1 and p2
+                        if (intersectsRectangle(p3, p4, rectLeft, rectRight, rectTop, rectBottom)) {
+                            area = 0;
+                            break;
+                        }
+                    }
+
+                    if (area != 0) {
+                        maxArea = area;
+                    }
+                }
+            }
+        }
+
+        if (maxArea <= 1529641011L) {
+            throw new AssertionError("Max area too small: " + maxArea);
+        }
+        if (maxArea >= 4650823975L) {
+            throw new AssertionError("Max area too large: " + maxArea);
+        }
+
+        System.out.println("Part 2: {" + maxArea + "}");
+    }
+
+    private static boolean intersectsRectangle(Point a, Point b,
+                                               long left, long right,
+                                               long top, long bottom) {
+        // Axis-aligned edges only
+        if (a.x() == b.x()) { // vertical edge at x = a.x
+            long x = a.x();
+            long y1 = Math.min(a.y(), b.y());
+            long y2 = Math.max(a.y(), b.y());
+            // intersects rectangle interior if x is strictly inside and y-range overlaps
+            return x > left && x < right && y2 > top && y1 < bottom;
+        } else { // horizontal edge at y = a.y
+            long y = a.y();
+            long x1 = Math.min(a.x(), b.x());
+            long x2 = Math.max(a.x(), b.x());
+            return y > top && y < bottom && x2 > left && x1 < right;
+        }
+    }
+
+    private static record Point(long x, long y) {
+        public static Point from(String line) {
+            String[] parts = line.split(",");
+            return new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+        }
     }
 }
 
-record Point(int x, int y) {
-    public static Point from(String line) {
-        String[] parts = line.split(",");
-        return new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
-    }
-}
