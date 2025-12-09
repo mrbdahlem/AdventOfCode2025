@@ -2,10 +2,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
-public class Aoc {
+public class Aoc10 {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data
-        File inputFile = new File("sampleX.txt");
+        File inputFile = new File("sample10.txt");
         Scanner scan = new Scanner(inputFile);
        
         // Load the entire data as one token

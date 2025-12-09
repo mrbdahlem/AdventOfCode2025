@@ -3,7 +3,6 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Aoc9 {
-    public static Point[] points;
 
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data
@@ -17,11 +16,11 @@ public class Aoc9 {
 
         // Solve the two parts of the puzzle
         long start = System.nanoTime();
-        points = prepare(data);
+        Point[] points = prepare(data);
         long prepped = System.nanoTime();
-        partOne();
+        partOne(points);
         long first = System.nanoTime();
-        partTwo();
+        partTwo(points);
         long sec = System.nanoTime();
 
         System.out.println("Preparation duration: " + (prepped - start) / 1000 / 1000 + "ms");
@@ -30,6 +29,7 @@ public class Aoc9 {
     }
 
     /**
+     * Convert raw input data into an array of Points
      * @param data raw input data 
      */
     public static Point[] prepare(String data) {
@@ -44,17 +44,22 @@ public class Aoc9 {
     }
 
     /**
-     * 
+     * Find the largest rectangle area defined by any two points
+     * @param points array of points
      */
-    public static void partOne() {
+    public static void partOne(Aoc9.Point[] points) {
         long maxArea = 0;
 
+        // Iterate over all pairs of points
         for (int i = 0; i < points.length - 1; i++) {
             Point p1 = points[i];
             for (int j = i + 1; j < points.length; j++) {
                 Point p2 = points[j];
 
+                // Calculate the area of the rectangle defined by p1 and p2
                 long area = Math.abs((p1.x() - p2.x() + 1) * (p1.y() - p2.y() + 1));
+
+                // Update maxArea if this area is larger
                 if (area > maxArea) {
                     maxArea = area;
                 }
@@ -65,30 +70,40 @@ public class Aoc9 {
     }
 
     /**
-     * 
+     * Find the largest rectangle area defined by any two points that does not intersect any line segments
+     * @param points the array of points
      */
-    public static void partTwo() {
+    public static void partTwo(Aoc9.Point[] points) {
         long maxArea = 0;
 
+        // Iterate over all pairs of points
         for (int i = 0; i < points.length - 1; i++) {
             Point p1 = points[i];
             for (int j = i + 1; j < points.length; j++) {
                 Point p2 = points[j];
 
+                // Define the rectangle boundaries formed by p1 and p2
                 long rectLeft = Math.min(p1.x(), p2.x());
                 long rectRight = Math.max(p1.x(), p2.x());
                 long rectTop = Math.min(p1.y(), p2.y());
                 long rectBottom = Math.max(p1.y(), p2.y()); 
 
+                // Calculate the area of the rectangle
                 long area = ((rectRight - rectLeft + 1) * (rectBottom - rectTop + 1));
+
+                // If the area is larger than maxArea, check for intersections
                 if (area > maxArea) {
                     for (int k = 0; k < points.length; k++) {
                         if (k == i || k == j) {
                             continue;
                         }
-                        Point p3 = points[k];
-
                         int l = (k + 1) % points.length;
+                        if (l == i || l == j) {
+                            continue;
+                        }
+
+                        // Get the current line segment defined by points[k] and points[(k + 1) % points.length]
+                        Point p3 = points[k];
                         Point p4 = points[l];
 
                         // check if the line between p3 and p4 intersects the rectangle formed by p1 and p2
@@ -115,25 +130,51 @@ public class Aoc9 {
         System.out.println("Part 2: {" + maxArea + "}");
     }
 
+    /**
+     * Check if the line segment between points a and b intersects the rectangle defined by left, right, top, bottom
+     * @param a the first point of the line segment
+     * @param b the second point of the line segment
+     * @param left the left boundary of the rectangle
+     * @param right the right boundary of the rectangle
+     * @param top the top boundary of the rectangle
+     * @param bottom the bottom boundary of the rectangle
+     * @return true if the line segment intersects the rectangle, false otherwise
+     */
     private static boolean intersectsRectangle(Point a, Point b,
                                                long left, long right,
                                                long top, long bottom) {
-        // Axis-aligned edges only
-        if (a.x() == b.x()) { // vertical edge at x = a.x
+        // Determine if the line segment is vertical or horizontal
+        if (a.x() == b.x()) {
+            // This is a vertical edge at x = a.x
             long x = a.x();
             long y1 = Math.min(a.y(), b.y());
             long y2 = Math.max(a.y(), b.y());
-            // intersects rectangle interior if x is strictly inside and y-range overlaps
+
+            // The line intersects the rectangle if x is between left and right
+            // and the y-range of the line overlaps with the y-range of the rectangle
             return x > left && x < right && y2 > top && y1 < bottom;
-        } else { // horizontal edge at y = a.y
+
+        } else {
+             // This is a horizontal edge at y = a.y
             long y = a.y();
             long x1 = Math.min(a.x(), b.x());
             long x2 = Math.max(a.x(), b.x());
+
+            // The line intersects the rectangle if y is between top and bottom
+            // and the x-range of the line overlaps with the x-range of the rectangle
             return y > top && y < bottom && x2 > left && x1 < right;
         }
     }
 
+    /**
+     * A point in 2D space
+     */
     private static record Point(long x, long y) {
+        /**
+         * Create a Point from a string in the format "x,y"
+         * @param line the input string
+         * @return the created Point
+         */
         public static Point from(String line) {
             String[] parts = line.split(",");
             return new Point(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
