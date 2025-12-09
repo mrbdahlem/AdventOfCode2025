@@ -5,13 +5,15 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
 
 public class Aoc8 {
     private static Point3D[] points;
     private static List<Circuit> circuits;
-    private static List<Pair> connectedPairs;
+    private static Queue<Pair> connectedPairs;
     private static Map<Point3D, Circuit> circuitMap;
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -40,9 +42,11 @@ public class Aoc8 {
         // Solve the two parts of the puzzle
         long start = System.nanoTime();
         prepare(data);
+        PriorityQueue<Pair> queueCopy = new PriorityQueue<>(connectedPairs);
         long prepped = System.nanoTime();
         partOne(numPairs);
         long first = System.nanoTime();
+        connectedPairs = queueCopy;
         partTwo();
         long sec = System.nanoTime();
 
@@ -56,31 +60,23 @@ public class Aoc8 {
      * @param data raw input data 
      */
     public static void prepare(String data) {
-        // long start = System.nanoTime();
-
+        // Parse the points from the input data
         String[] lines = data.split("\\R");
         points = new Point3D[lines.length];
         for (int i = 0; i < lines.length; i++) {
             points[i] = Point3D.from(lines[i]);
         }
 
-        // long parse = System.nanoTime();
-
-        connectedPairs = new ArrayList<>(points.length * (points.length - 1) / 2);
+        // Create all pairs of points and add them to a priority queue (sorted by distance)
+        connectedPairs = new PriorityQueue<>(points.length * (points.length - 1) / 2);
         for (int j = 0; j < points.length; j++) {
             Point3D p1 = points[j];
             for (int k = j + 1; k < points.length; k++) {
                 connectedPairs.add(new Pair(p1, points[k]));
             }
         }
-        
-        // long pairs = System.nanoTime();
 
-        // Sort pairs by distance smallest to largest
-        connectedPairs.sort((a, b) -> Long.compare(a.distance(), b.distance()));
-
-        // long sort = System.nanoTime();
-
+        // Initialize each point as its own circuit
         circuits = new ArrayList<>(points.length);
         circuitMap = new HashMap<>(points.length);
         for (Point3D p : points) {
@@ -89,13 +85,6 @@ public class Aoc8 {
             circuits.add(c);
             circuitMap.put(p, c);
         }
-
-        // long circuitsTime = System.nanoTime();
-
-        // System.out.println("Parsing duration: " + (parse - start) / 1000 / 1000 + "ms");
-        // System.out.println("Pairing duration: " + (pairs - parse) / 1000 / 1000 + "ms");
-        // System.out.println("Sorting duration: " + (sort - pairs) / 1000 / 1000 + "ms");
-        // System.out.println("Circuit initialization duration: " + (circuitsTime - sort) / 1000 / 1000 + "ms");
     }
 
     /**
@@ -105,7 +94,7 @@ public class Aoc8 {
     public static void partOne(int numPairs) {
         // Connect the closest pairs of points into circuits
         for (int i = 0; i < numPairs; i++) {
-            Pair pair = connectedPairs.get(i);
+            Pair pair = connectedPairs.poll();
             Circuit c1 = circuitMap.get(pair.p1());
             Circuit c2 = circuitMap.get(pair.p2());
 
@@ -136,10 +125,9 @@ public class Aoc8 {
      */
     public static void partTwo() {
         // Connect the closest pairs of points into circuits
-        int i = 0;
         Pair pair = null;
         while(circuits.size() > 1) {
-            pair = connectedPairs.get(i);
+            pair = connectedPairs.poll();
             Circuit c1 = circuitMap.get(pair.p1());
             Circuit c2 = circuitMap.get(pair.p2());
 
@@ -150,7 +138,6 @@ public class Aoc8 {
                 circuits.remove(c2);
                 circuits.add(merged);
             }
-            i++;
         }
         
         // Calculate the distance from the wall to the last pair
@@ -163,7 +150,7 @@ public class Aoc8 {
     /**
      * A pair of 3D points and their squared distance
      */
-    private static record Pair(Point3D p1, Point3D p2, long distance) {
+    private static record Pair(Point3D p1, Point3D p2, long distance) implements Comparable<Pair> {
         public Pair(Point3D p1, Point3D p2) {
             this(p1, p2, p1.distanceSquared(p2));
         }
@@ -180,6 +167,15 @@ public class Aoc8 {
             Pair pair = (Pair) o;
             return (p1.equals(pair.p1) && p2.equals(pair.p2)) ||
                 (p1.equals(pair.p2) && p2.equals(pair.p1));
+        }
+
+        /**
+         * Compare this pair to another pair based on their distance
+         * @param other the other pair
+         * @return negative if this pair is closer, positive if farther, zero if equal
+         */        @Override
+        public int compareTo(Pair other) {
+            return Long.compare(this.distance, other.distance);
         }
     }
 
