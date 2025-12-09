@@ -12,18 +12,6 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class Aoc8 {
-    // The points from the input data
-    private static Point3D[] points;
-
-    // The circuits of connected points
-    private static List<Circuit> circuits;
-
-    // A priority queue of connected pairs of points, sorted by distance
-    private static Queue<Pair> connectedPairs;
-
-    // A map of points to the circuits they belong to
-    private static Map<Point3D, Circuit> circuitMap;
-
     public static void main(String[] args) throws FileNotFoundException {
         int numPairs; String datafile;
 
@@ -48,13 +36,21 @@ public class Aoc8 {
 
         // Solve the two parts of the puzzle
         long start = System.nanoTime();
-        prepare(data);
-        PriorityQueue<Pair> queueCopy = new PriorityQueue<>(connectedPairs);
+        PreppedData preppedData = prepare(data);
+
+        // The circuits of connected points
+        List<Circuit> circuits = preppedData.circuits();
+
+        // A priority queue of connected pairs of points, sorted by distance
+        Queue<Pair> connectedPairs = preppedData.connectedPairs();
+
+        // A map of points to the circuits they belong to
+        Map<Point3D, Circuit> circuitMap = preppedData.circuitMap();
+
         long prepped = System.nanoTime();
-        partOne(numPairs);
+        partOne(numPairs, connectedPairs, circuitMap, circuits);
         long first = System.nanoTime();
-        connectedPairs = queueCopy;
-        partTwo();
+        partTwo(connectedPairs, circuitMap, circuits);
         long sec = System.nanoTime();
 
         System.out.println("Preparation duration: " + (prepped - start) / 1000 / 1000 + "ms");
@@ -66,16 +62,16 @@ public class Aoc8 {
      * Parse the input data into useful structures
      * @param data raw input data 
      */
-    public static void prepare(String data) {
+    public static PreppedData prepare(String data) {
         // Parse the points from the input data
         String[] lines = data.split("\\R");
-        points = new Point3D[lines.length];
+        Point3D[] points = new Point3D[lines.length];
         for (int i = 0; i < lines.length; i++) {
             points[i] = Point3D.from(lines[i]);
         }
 
         // Create all pairs of points and add them to a priority queue (sorted by distance)
-        connectedPairs = new PriorityQueue<>(points.length * (points.length - 1) / 2);
+        Queue<Pair> connectedPairs = new PriorityQueue<>(points.length * (points.length - 1) / 2);
         for (int j = 0; j < points.length; j++) {
             Point3D p1 = points[j];
             for (int k = j + 1; k < points.length; k++) {
@@ -84,34 +80,29 @@ public class Aoc8 {
         }
 
         // Initialize each point as its own circuit
-        circuits = new ArrayList<>(points.length);
-        circuitMap = new HashMap<>(points.length);
+        List<Circuit> circuits = new ArrayList<>(points.length);
+        Map<Point3D, Circuit> circuitMap = new HashMap<>(points.length);
         for (Point3D p : points) {
             Circuit c = new Circuit();
             c.add(p);
             circuits.add(c);
             circuitMap.put(p, c);
         }
+
+        return new PreppedData(connectedPairs, circuitMap, circuits);
     }
 
     /**
      * Connect the closest pairs of points into circuits
      * @param numPairs number of pairs to connect
+     * @param circuits the circuits of connected points
+     * @param circuitMap map of points to the circuits they belong to
+     * @param connectedPairs priority queue of connected pairs of points sorted by distance
      */
-    public static void partOne(int numPairs) {
+    public static void partOne(int numPairs, Queue<Pair> connectedPairs, Map<Point3D,Circuit> circuitMap, List<Circuit> circuits) {
         // Connect the closest pairs of points into circuits
         for (int i = 0; i < numPairs; i++) {
-            Pair pair = connectedPairs.poll();
-            Circuit c1 = circuitMap.get(pair.p1());
-            Circuit c2 = circuitMap.get(pair.p2());
-
-            // Merge the two circuits if they are not the same circuit
-            if (c1 != c2) {
-                Circuit merged = c1.merge(c2, circuitMap);
-                circuits.remove(c1);
-                circuits.remove(c2);
-                circuits.add(merged);
-            }
+            connectNextPair(connectedPairs, circuitMap, circuits);
         }
         
         // Sort circuits by size largest to smallest
@@ -129,29 +120,43 @@ public class Aoc8 {
 
     /**
      * Connect the closest pairs of points into circuits until all points are connected in one circuit
+     * @param circuits the circuits of connected points
+     * @param circuitMap map of points to the circuits they belong to
+     * @param connectedPairs priority queue of connected pairs of points sorted by distance
      */
-    public static void partTwo() {
+    public static void partTwo(Queue<Pair> connectedPairs, Map<Point3D,Circuit> circuitMap, List<Circuit> circuits) {
         // Connect the closest pairs of points into circuits
         Pair pair = null;
         while(circuits.size() > 1) {
-            pair = connectedPairs.poll();
-            Circuit c1 = circuitMap.get(pair.p1());
-            Circuit c2 = circuitMap.get(pair.p2());
-
-            // Merge the two circuits if they are not the same circuit
-            if (c1 != c2) {
-                Circuit merged = c1.merge(c2, circuitMap);
-                circuits.remove(c1);
-                circuits.remove(c2);
-                circuits.add(merged);
-            }
+            pair = connectNextPair(connectedPairs, circuitMap, circuits);
         }
         
         // Calculate the distance from the wall to the last pair
         long total = pair.p1().x() * pair.p2().x();
 
         System.out.println("Part 2: {" + total + "}");
-    }   
+    }
+
+    private static Pair connectNextPair(Queue<Pair> connectedPairs, Map<Point3D,Circuit> circuitMap, List<Circuit> circuits) {
+        Pair pair = connectedPairs.poll();
+        Circuit c1 = circuitMap.get(pair.p1());
+        Circuit c2 = circuitMap.get(pair.p2());
+
+        // Merge the two circuits if they are not the same circuit
+        if (c1 != c2) {
+            Circuit merged = c1.merge(c2, circuitMap);
+            circuits.remove(c1);
+            circuits.remove(c2);
+            circuits.add(merged);
+        }
+
+        return pair;
+    }
+
+    /**
+     * A record to hold prepped data structures
+     */
+    record PreppedData(Queue<Pair> connectedPairs, Map<Point3D, Circuit> circuitMap, List<Circuit> circuits) {}
 }
 
 /**
