@@ -3,6 +3,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+/**
+ * Advent of Code 2025 - Day 1
+ * @author Brian Dahlem
+ * 
+ * Simulate a combination lock dial and count how many times it hits zero
+ * based on a series of left/right turns and click counts.
+ */
 public class Aoc1 {
     public static void main(String[] args) throws FileNotFoundException {
         File dataFile = new File("day1.txt");

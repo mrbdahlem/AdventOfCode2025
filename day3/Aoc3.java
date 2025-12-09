@@ -5,6 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+/**
+ * Advent of Code 2025 - Day 3
+ * @author Brian Dahlem
+ * 
+ * Find the largest joltage number by selecting batteries from banks
+ * and concatenating their values.
+ */
 public class Aoc3 {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data

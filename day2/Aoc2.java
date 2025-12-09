@@ -3,6 +3,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+/**
+ * Advent of Code 2025 - Day 2
+ * @author Brian Dahlem
+ * 
+ * Check product id ranges for invalid ids based on repeating digit patterns
+ * and calculate the total of those invalid ids.
+ */
 public class Aoc2 {
     public static void main(String[] args) throws FileNotFoundException {
         File inputFile = new File("day2.txt");

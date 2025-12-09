@@ -5,6 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Advent of Code 2025 - Day 5
+ * @author Brian Dahlem
+ * 
+ * Determine which ingredients are still fresh based on given ranges
+ * and calculate the total number of fresh ingredient ids covered by the ranges.
+ */
 public class Aoc5 {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data

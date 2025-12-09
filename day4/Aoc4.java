@@ -3,6 +3,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+/**
+ * Advent of Code 2025 - Day 4
+ * @author Brian Dahlem
+ * 
+ * Find out how many paper rolls can be removed from the warehouse using a forklift
+ * that can only access rolls with less than 4 neighboring rolls.
+ */
 public class Aoc4 {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data

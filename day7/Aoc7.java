@@ -7,6 +7,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+/**
+ * Advent of Code 2025 - Day 7
+ * @author Brian Dahlem
+ * 
+ * Simulate a tachyon beam passing through a grid of splitters to determine
+ * how many times it splits and how many distinct timelines are created.
+ */
 public class Aoc7 {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data

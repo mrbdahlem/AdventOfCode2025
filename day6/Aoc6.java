@@ -3,6 +3,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+/**
+ * Advent of Code 2025 - Day 6
+ * @author Brian Dahlem
+ * 
+ * Solve vertical math problems for the cephalopods by reading numbers written
+ * in columns and applying the specified operations.
+ */
 public class Aoc6 {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data

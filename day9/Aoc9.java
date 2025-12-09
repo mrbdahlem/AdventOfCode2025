@@ -3,6 +3,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+/**
+ * Advent of Code 2025 - Day 9
+ * @author Brian Dahlem
+ * 
+ * Find the largest rectangle area defined by two points that make up opposite
+ * corners, and then find the largest such area that does not contain spaces
+ * outside the polygon formed by connecting all points in order.
+ */
 public class Aoc9 {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data

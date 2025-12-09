@@ -11,6 +11,13 @@ import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
 
+/**
+ * Advent of Code 2025 - Day 8
+ * @author Brian Dahlem
+ * 
+ * Connect junction boxes (points) in 3D space into circuits to minimize wiring
+ * distance so that the elves can set up their holiday lights!
+ */
 public class Aoc8 {
     public static void main(String[] args) throws FileNotFoundException {
         int numPairs; String datafile;
