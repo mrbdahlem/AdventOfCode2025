@@ -11,9 +11,16 @@ import java.util.Scanner;
 import java.util.Set;
 
 public class Aoc8 {
+    // The points from the input data
     private static Point3D[] points;
+
+    // The circuits of connected points
     private static List<Circuit> circuits;
+
+    // A priority queue of connected pairs of points, sorted by distance
     private static Queue<Pair> connectedPairs;
+
+    // A map of points to the circuits they belong to
     private static Map<Point3D, Circuit> circuitMap;
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -36,7 +43,6 @@ public class Aoc8 {
         // Load the entire data as one token
         scan.useDelimiter("\\A");
         String data = scan.next();
-
         scan.close();
 
         // Solve the two parts of the puzzle
