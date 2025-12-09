@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Aoc9 {
-
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data
         File inputFile = new File("day9.txt");
@@ -166,7 +165,6 @@ public class Aoc9 {
             return y > top && y < bottom && x2 > left && x1 < right;
         }
     }
-
 }
 
 
