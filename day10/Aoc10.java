@@ -2,20 +2,28 @@ package day10;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Scanner;
 
+import javax.naming.Context;
+
 import com.microsoft.z3.ArithExpr;
-import com.microsoft.z3.Context;
 import com.microsoft.z3.IntExpr;
 import com.microsoft.z3.IntNum;
 import com.microsoft.z3.Model;
 import com.microsoft.z3.Optimize;
-import com.microsoft.z3.Status;
 
+/**
+ * Advent of Code 2024 - Day 10
+ * @author Brian Dahlem
+ * 
+ * Light toggling machines with buttons affecting multiple lights.
+ * Part 2 adds "joltage" requirements for each machine.
+ */
 public class Aoc10 {
     public static void main(String[] args) throws FileNotFoundException {
         // Load the data
@@ -42,7 +50,9 @@ public class Aoc10 {
     }
 
     /**
+     * Prepare the input data for processing, convert each line into a machine Configuration
      * @param data raw input data
+     * @return array of machine Configurations
      */
     public static Configuration[] prepare(String data) {
         String[] lines = data.split("\\R");
@@ -55,12 +65,13 @@ public class Aoc10 {
     }
 
     /**
-     * @param config 
-     * 
+     * Determine the correct number of button presses for each machine to reach its light goal
+     * @param config array of machine Configurations 
      */
     public static void partOne(Configuration[] config) {
         long total = 0;
 
+        // Sum minimum presses for each machine
         for (Configuration machine : config) {
             total += minPresses(machine);
         }
@@ -68,68 +79,84 @@ public class Aoc10 {
         System.out.println("Part 1: {" + total + "}");
     }
 
+    /**
+     * Determine the minimum button presses to reach the light goal for a machine
+     * @param machine the machine Configuration
+     * @return minimum number of button presses needed to set the lights to the goal
+     */
     public static int minPresses(Configuration machine) {
-        boolean[] lights = new boolean[machine.lightGoal().length];
         int presses = 0;
 
-        int[][] buttons = machine.buttonEffects();
-
-        Queue<MachineOp> ops = new PriorityQueue<>();
-        ops.addAll(nextStates(-1, lights, presses, buttons));
+        boolean[] lights = new boolean[machine.lightGoal().length]; // all off initially
+        int[][] buttons = machine.buttonEffects(); // the lights each button toggles
+        Queue<MachineOp> ops = new PriorityQueue<>(); // operations to explore
+        ops.addAll(nextStates(-1, lights, presses, buttons)); // inital button presses
         
+        // Explore operations until we reach the goal
         while (!lightsMatch(lights, machine.lightGoal())) {
+            // Get the results of the next operation
             MachineOp op = ops.poll();
             lights = op.lights();
             presses = op.presses();
 
+            // Add next possible operations to explore
             ops.addAll(nextStates(op.button(), lights, presses, buttons));    
         }
 
         return presses;
     }
 
+    /**
+     * Generate the next possible machine operations from the current state
+     * @param button the button to press
+     * @param lights current light configuration
+     * @param presses number of presses so far
+     * @param buttons the button effects on lights
+     * @return collection of next possible machine operations
+     */
     private static Collection<? extends MachineOp> nextStates(int button, boolean[] lights, int presses, int[][] buttons) {
         List<MachineOp> ops = new ArrayList<>();
 
+        // Try pressing each button (except the last pressed which would just undo it)
         for (int b = 0; b < buttons.length; b++) {
             if (b == button) {
                 continue;
             }
             boolean[] newLights = lights.clone();
+
+            // Toggle the lights affected by this button
             for (int lightIndex : buttons[b]) {
                 newLights[lightIndex] = !newLights[lightIndex];
             }
+
             ops.add(new MachineOp(b, newLights, presses + 1));
         }
 
         return ops;
     }
 
+    /**
+     * Check if the current light configuration matches the goal
+     * @param lights current light configuration
+     * @param goal target light configuration
+     * @return true if the configurations match, false otherwise
+     */
     public static boolean lightsMatch(boolean[] lights, boolean[] goal) {
-        if (lights.length != goal.length) {
-            return false;
-        }
-
-        for (int i = 0; i < lights.length; i++) {
-            if (lights[i] != goal[i]) {
-                return false;
-            }
-        }
-
-        return true;
+        return Arrays.equals(lights, goal);
     }
     
     /**
-     * @param config 
-     * 
+     * Determine the minimum number of button presses for each machine 
+     * to match its joltage requirements
+     * @param config array of machine Configurations 
      */
     public static void partTwo(Configuration[] config) {
         long total = 0;
 
+        // Sum minimum presses for each machine
         for (int i = 0; i < config.length; i++) {
             System.out.println(i);
-            Configuration machine = config[i];
-            total += minJoltagePresses(machine);
+            total += minJoltagePresses(config[i]);
         }
         
         System.out.println("Part 2: {" + total + "}");
