@@ -9,13 +9,15 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Scanner;
 
-import javax.naming.Context;
-
 import com.microsoft.z3.ArithExpr;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import com.microsoft.z3.IntExpr;
 import com.microsoft.z3.IntNum;
+import com.microsoft.z3.IntSort;
 import com.microsoft.z3.Model;
 import com.microsoft.z3.Optimize;
+import com.microsoft.z3.Status;
 
 /**
  * Advent of Code 2024 - Day 10
@@ -25,7 +27,26 @@ import com.microsoft.z3.Optimize;
  * Part 2 adds "joltage" requirements for each machine.
  */
 public class Aoc10 {
+    // Ensure the Z3 native library is available when running inside the dev container
+    static {
+        // Load libz3 (native core) then libz3java (JNI) explicitly from known system locations.
+        String z3Core = "/usr/lib/x86_64-linux-gnu/libz3.so";
+        String z3Java = "/usr/lib/x86_64-linux-gnu/jni/libz3java.so";
+        try {
+            System.load(z3Core);
+            System.load(z3Java);
+        } catch (UnsatisfiedLinkError e) {
+            String hint = "Run with -Djava.library.path=/usr/lib/x86_64-linux-gnu/jni:/usr/lib/x86_64-linux-gnu or set LD_LIBRARY_PATH accordingly.";
+            throw new RuntimeException("Unable to load Z3 native libraries (tried %s then %s). ".formatted(z3Core, z3Java) + hint, e);
+        }
+    }
+
+    private static void ensureZ3Loaded() {
+        // Touching this method ensures the static block executed; useful for explicit call sites.
+    }
+
     public static void main(String[] args) throws FileNotFoundException {
+        ensureZ3Loaded();
         // Load the data
         File inputFile = new File("day10.txt");
         Scanner scan = new Scanner(inputFile);
@@ -162,26 +183,37 @@ public class Aoc10 {
         System.out.println("Part 2: {" + total + "}");
     }
 
+    /**
+     * Determine the minimum button presses to reach the joltage goal for a machine
+     * @param machine the machine Configuration
+     * @return 
+     */
+    @SuppressWarnings("unchecked")
     private static long minJoltagePresses(Configuration machine) {
         int[] goal = machine.joltage();
         int[][] buttons = machine.buttonEffects();
         int numButtons = buttons.length;
 
         // Solve as ILP with Z3: minimize sum(x_j) subject to A*x = goal, x_j >= 0
+        // where A_ij = 1 if button j affects index i, else 0
         try (Context ctx = new Context()) {
             Optimize opt = ctx.mkOptimize();
             IntExpr[] x = new IntExpr[numButtons];
-            ArithExpr[] xAsArith = new ArithExpr[numButtons];
+            IntExpr[] xAsInts = new IntExpr[numButtons];
 
+            // Variables: number of presses for each button
             for (int j = 0; j < numButtons; j++) {
                 x[j] = ctx.mkIntConst("x" + j);
-                xAsArith[j] = x[j];
-                opt.Add(ctx.mkGe(x[j], ctx.mkInt(0)));
+                xAsInts[j] = x[j];
+                BoolExpr geZero = ctx.mkGe(x[j], ctx.mkInt(0));
+                opt.Add(new BoolExpr[] { geZero });
             }
 
+            // Constraints: for each index, sum of affecting buttons = goal at that index
             int numIndices = goal.length;
             for (int i = 0; i < numIndices; i++) {
-                List<ArithExpr> terms = new ArrayList<>();
+                List<IntExpr> terms = new ArrayList<>();
+                // Find buttons that affect this index
                 for (int j = 0; j < numButtons; j++) {
                     for (int idx : buttons[j]) {
                         if (idx == i) {
@@ -199,28 +231,32 @@ public class Aoc10 {
                     continue;
                 }
 
-                ArithExpr sum;
+                // Create equality constraint for this index
+                ArithExpr<IntSort> sum;
                 if (terms.size() == 1) {
                     sum = terms.get(0);
                 } else {
-                    sum = ctx.mkAdd(terms.toArray(new ArithExpr[0]));
+                    sum = ctx.mkAdd(terms.toArray(new IntExpr[0]));
                 }
-                opt.Add(ctx.mkEq(sum, ctx.mkInt(goal[i])));
+                BoolExpr equality = ctx.mkEq(sum, ctx.mkInt(goal[i]));
+                opt.Add(new BoolExpr[] { equality });
             }
 
-            ArithExpr total;
-            if (xAsArith.length == 1) {
-                total = xAsArith[0];
+            ArithExpr<IntSort> total;
+            if (xAsInts.length == 1) {
+                total = xAsInts[0];
             } else {
-                total = ctx.mkAdd(xAsArith);
+                total = ctx.mkAdd(xAsInts);
             }
             opt.MkMinimize(total);
 
+            // Solve the ILP
             Status status = opt.Check();
             if (status != Status.SATISFIABLE && status != Status.UNKNOWN) {
                 return -1;
             }
 
+            // Extract the minimum total presses from the model
             Model model = opt.getModel();
             if (model == null) return -1;
             IntNum val = (IntNum) model.evaluate(total, false);
@@ -230,16 +266,29 @@ public class Aoc10 {
 
 }
 
+/**
+ * Configuration of a light toggling machine
+ * @param lightGoal target light configuration
+ * @param buttonEffects lights affected by each button
+ * @param joltage joltage requirements for the machine
+ */
 record Configuration (boolean[] lightGoal, int[][] buttonEffects, int[] joltage) {
+    /**
+     * Create a Configuration from a raw data string
+     * @param data raw data string
+     * @return the Configuration represented by the data
+     */
     public static Configuration from(String data) {
         String[] parts = data.split("\s+");
         String lightConfig = parts[0].substring(1, parts[0].length() - 1);
         
+        // Parse light goal configuration
         boolean[] lightGoal = new boolean[lightConfig.length()];
         for (int i = 0; i < lightConfig.length(); i++) {
             lightGoal[i] = lightConfig.charAt(i) == '#';
         }
 
+        // Parse button effects for each button
         int[][] buttonEffects = new int[parts.length - 2][];
         for (int i = 1; i < parts.length - 1; i++) {
             String[] effectParts = parts[i].substring(1, parts[i].length() - 1).split(",");
@@ -249,6 +298,7 @@ record Configuration (boolean[] lightGoal, int[][] buttonEffects, int[] joltage)
             }
         }
 
+        // Parse joltage requirements
         String joltageSpec = parts[parts.length - 1];
         joltageSpec = joltageSpec.substring(1, joltageSpec.length() - 1);
         String[] joltageParts = joltageSpec.split(",");
@@ -261,6 +311,12 @@ record Configuration (boolean[] lightGoal, int[][] buttonEffects, int[] joltage)
     }
 }
 
+/**
+ * Represents a machine operation state for searching
+ * @param button the last button pressed
+ * @param lights current light configuration
+ * @param presses number of presses so far
+ */
 record MachineOp (int button, boolean[] lights, int presses) implements Comparable<MachineOp> {
     @Override
     public int compareTo(MachineOp other) {
@@ -268,6 +324,13 @@ record MachineOp (int button, boolean[] lights, int presses) implements Comparab
     }
 }
 
+/**
+ * Represents a joltage operation state for searching
+ * @param joltage current joltage configuration
+ * @param presses number of presses so far
+ * @param goal target joltage configuration
+ * @param key unique key for this state
+ */
 record JoltageOp (int[] joltage, int presses, int[] goal, String key) implements Comparable<JoltageOp> {
     @Override
     public int compareTo(JoltageOp other) {
