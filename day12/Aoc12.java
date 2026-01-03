@@ -40,17 +40,20 @@ public class Aoc12 {
     }
 
     /**
+     * Prepare the data for processing. Break the input into package shapes and region definitions.
      * @param data raw input data
      */
     public static void prepare(String data) {
         String[] parts = data.split("\n\n");
         
+        // Load packages
         packages = new HashMap<>();
         for (int i = 0; i < parts.length - 1; i++) {
             Package pkg = new Package(parts[i]);
             packages.put(pkg.getId(), pkg);
         }
-        
+
+        // Load regions        
         String[] regionParts = parts[parts.length - 1].split("\\R");
         regions = new Region[regionParts.length];
         for (int i = 0; i < regionParts.length; i++) {
@@ -59,7 +62,7 @@ public class Aoc12 {
     }
 
     /**
-     * 
+     * Determine how many regions can fit the packages that need to be placed inside them.
      */
     public static void partOne() {
         long total = 0;
@@ -90,7 +93,7 @@ public class Aoc12 {
     }
 
     /**
-     * 
+     * No part 2.
      */
     public static void partTwo() {
         long total = 0;
@@ -99,6 +102,9 @@ public class Aoc12 {
     }
 }
 
+/**
+ * Represents a package shape.
+ */
 class Package {
     private final int id;
     private final int width;
@@ -142,6 +148,9 @@ class Package {
     }
 }
 
+/**
+ * Represents a region where packages can be placed.
+ */
 class Region {
     private final int width;
     private final int height;
